@@ -183,11 +183,12 @@ function postUsuarios() {
     outputJson(["message" => "Usuario creado exitosamente"], 201);//Created
 }
 
-function postPublicacion() {
+function postPublicaciones() {
     $db = conectarBD();
     $data = json_decode(file_get_contents('php://input'), true);
     if (!isset($data['usuario_id']) || !isset($data['raza']) || !isset($data['lugar']) || !isset($data['foto'])) {
         outputError(400);
+        return;
     }
     $usuario_id = settype($data['usuario_id'], 'integer');
     $raza = ucfirst(strtolower(trim($data['raza'])));
@@ -202,8 +203,8 @@ function postPublicacion() {
     if (mysqli_num_rows($result) > 0){
         //La raza ya existe, por lo que solo actualizo su cantidad_publicaciones
         $toUpdateRaza = mysqli_fetch_assoc($result);
-        $id = settype($toUpdateRaza['id'], 'integer');
-        $sql = "UPDATE razas SET cantidad_publicaciones = cantidad_publicaciones + 1 WHERE id = $id";
+        $id_raza = settype($toUpdateRaza['id'], 'integer');
+        $sql = "UPDATE razas SET cantidad_publicaciones = cantidad_publicaciones + 1 WHERE id = $id_raza";
         $result = mysqli_query($db, $sql);
         if ($result === false){
             print mysqli_error($db);
@@ -219,10 +220,10 @@ function postPublicacion() {
             outputError(500);//Internal server error
             return;
         }
-        $insert_id = mysqli_insert_id($db);
+        $id_raza = mysqli_insert_id($db);
     }
     //Ahora, puedo insertar la nueva publicacion
-    $sql = "INSERT INTO publicaciones (usuario_id, id_raza, lugar, foto) VALUES ($usuario_id, $insert_id, '$lugar', '$foto')";
+    $sql = "INSERT INTO publicaciones (usuario_id, id_raza, lugar, foto) VALUES ($usuario_id, $id_raza, '$lugar', '$foto')";
     $result = mysqli_query($db, $sql);
     if ($result === false){
         print mysqli_error($db);
@@ -231,4 +232,77 @@ function postPublicacion() {
     }
     mysqli_close($db);
     outputJson(["message" => "Nueva publicacion creada exitosamente"], 201);//Created
+}
+
+function postRazas() {
+    $db = conectarBD();
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (!isset($data['nombre'])) {
+        print mysqli_error($db);
+        outputError([400, "El nombre es requerido"]);//Bad request
+    }
+    $nombre = ucfirst(strtolower(trim($data['nombre'])));
+    $nombre = mysqli_real_escape_string($db, $nombre);
+
+    //Me fijo que no se repita
+    $sql = "SELECT id FROM razas WHERE nombre = '$nombre'";
+    $result = mysqli_query($db, $sql);
+    if ($result === false) {
+        print mysqli_error($db);
+        outputError([500, "Error al verificar la existencia de la raza"]);
+        return;
+    }
+    if(mysqli_num_rows($result) > 0){
+        //Entonces la raza ya existe, no la inserto
+        print mysqli_error($db);
+        outputError([409, "La raza que se intento ingresar ya existe"]);//Conflict
+        return;
+    }
+    $sql = "INSERT INTO razas (nombre) VALUES ('$nombre')";
+    $result = mysqli_query($db, $sql);
+    if ($result === false) {
+        print mysqli_error($db);
+        outputError(500);//Internal server error
+    }
+    $insert_id = mysqli_insert_id($db);
+    mysqli_close($db);
+    outputJson(["message" => "Nueva raza ($insert_id) creada exitosamente"]);
+}
+
+function patchUsuarios($id) {
+    settype($id, 'integer');
+    $db = conectarBD();
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (!isset($data['nombre']) || !isset($data['email']) || !isset($data['contacto']) || !isset($data['es_admin'])){
+        outputError([400, "No se completaron los campos requeridos"]);
+        print mysqli_error($db);
+    }
+    //Busco el usuario con el id enviado
+    $sql = "SELECT * FROM usuarios WHERE id = $id";
+    $result = mysqli_query($db, $sql);
+    if ($result === false){
+        print mysqli_error($db);
+        outputError([404, "No se encontro usuario con el id proporcionado"]);
+        mysqli_close($db);
+        return;
+    }else{
+        $nombre = $data['nombre'];        
+        $nombre = mysqli_real_escape_string($db, $nombre);
+        $email = $data['email'];        
+        $email = mysqli_real_escape_string($db, $email);
+        $contacto = $data['contacto'];        
+        $contacto = mysqli_real_escape_string($db, $contacto);
+        $es_admin = $data['es_admin'];
+        if ($es_admin != true && $es_admin != false && $es_admin != 1 && $es_admin != 0){
+            outputError([400, "El campo es_admin debe ser boolean"]);
+        }
+        $sql = "UPDATE usuarios SET nombre = '$nombre', email = '$email', contacto = '$contacto', es_admin = $es_admin WHERE id = $id";
+        $result = mysqli_query($db, $sql);
+        if ($result === false){
+            print mysqli_error($db);
+            outputError([500, "Error al actualizar el usuario"]);
+        }
+        mysqli_close($db);
+        outputJson(["message" => "Se actualizo el usuario con id $id"]);
+    }
 }

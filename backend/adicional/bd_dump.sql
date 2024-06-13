@@ -41,18 +41,18 @@ CREATE TABLE IF NOT EXISTS token (
 );
 
 
---Volcado de datos
+-- Volcado de datos
 INSERT INTO usuarios (nombre, email, password, contacto) VALUES
 ('Juan Perez', 'juan.perez@example.com', 'password123', '123456789'),
 ('Maria Gomez', 'maria.gomez@example.com', 'password123', '987654321'),
 ('Carlos Martinez', 'carlos.martinez@example.com', 'password123', '456789123');
 
 INSERT INTO razas (nombre, cantidad_publicaciones) VALUES
-('Labrador', 0),
-('Golden Retriever', 0),
-('Bulldog', 0),
-('Beagle', 0),
-('Poodle', 0);
+('labrador', 0),
+('golden retriever', 0),
+('bulldog', 0),
+('beagle', 0),
+('poodle', 0);
 
 INSERT INTO publicaciones (usuario_id, id_raza, lugar, foto) VALUES
 (1, 1, 'Parque Central', 'labrador1.jpg'),
