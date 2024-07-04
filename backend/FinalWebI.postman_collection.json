@@ -1,0 +1,378 @@
+{
+	"info": {
+		"_postman_id": "8771552e-3368-4119-aa60-cacff261bd7e",
+		"name": "FinalWebI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29574524"
+	},
+	"item": [
+		{
+			"name": "GET",
+			"item": [
+				{
+					"name": "USUARIOS",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/usuarios",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUBLICACIONES",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/publicaciones",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"publicaciones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RAZAS",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/razas",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"razas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "USUARIOS CON PARAMETROS",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/usuarios/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"usuarios",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUBLICACIONES CON PARAMETROS",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/publicaciones/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"publicaciones",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RAZAS CON PARAMETROS",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/razas/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"razas",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "POST",
+			"item": [
+				{
+					"name": "USUARIOS",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nombre\": \"John Doe\",\r\n  \"email\": \"john.doe@example.com\",\r\n  \"password\": \"johndoe123\",\r\n  \"contacto\": \"+1234567890\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/usuarios",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUBLICACIONES",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"usuario_id\": 1,\r\n    \"raza\": \"golden retriever\",\r\n    \"lugar\": \"Parque Central\",\r\n    \"foto\": \"foto_url_aqui\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/publicaciones",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"publicaciones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RAZAS",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"pichicho\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/razas",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"razas"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PATCH",
+			"item": [
+				{
+					"name": "USUARIOS",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nombre\": \"Juan Doe\",\r\n  \"email\": \"john.doe@example.com\",\r\n  \"contacto\": \"+1234567890\",\r\n  \"es_admin\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/usuarios/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"usuarios",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUBLICACIONES",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"raza\": \"labrador\",\r\n    \"lugar\": \"Plaza Mayor\",\r\n    \"foto\": \"nueva_foto_url_aqui\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/publicaciones/6/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"publicaciones",
+								"6",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "DELETE",
+			"item": [
+				{
+					"name": "USUARIOS",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/usuarios/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"usuarios",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUBLICACIONES",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/publicaciones/6",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"publicaciones",
+								"6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RAZAS",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/finalWebI/backend/api/razas/6",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"finalWebI",
+								"backend",
+								"api",
+								"razas",
+								"6"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

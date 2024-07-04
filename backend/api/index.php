@@ -168,7 +168,7 @@ function postUsuarios() {
     if (mysqli_num_rows($result) > 0){
         print mysqli_error($db);
         outputError('El mail pertenece a otro usuario');
-        die;
+        return;
     }
     $password_hash = password_hash($password, PASSWORD_BCRYPT); //Creo hash para encriptar la contraseña
     $nombre = mysqli_real_escape_string($db, $nombre);
@@ -305,4 +305,146 @@ function patchUsuarios($id) {
         mysqli_close($db);
         outputJson(["message" => "Se actualizo el usuario con id $id"]);
     }
+}
+function patchPublicaciones($id_publicacion, $id_usuario) {
+    settype($id_publicacion, 'integer');
+    settype($id_usuario, 'integer');
+    $db = conectarBD();
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    // Verifico que se haya ingresado algún campo
+    if (!isset($data['raza']) && !isset($data['lugar']) && !isset($data['foto'])){
+        outputError([500, 'No se ingresaron los datos para actualizar']); // Internal server error
+        return;
+    }
+    
+    // Busco la publicación y verifico que sea del usuario
+    $sql = "SELECT * FROM publicaciones WHERE id = $id_publicacion AND usuario_id = $id_usuario";
+    $result = mysqli_query($db, $sql);
+    if (mysqli_num_rows($result) < 1){
+        outputError([404, 'Publicación no encontrada o no pertenece al usuario']);
+        mysqli_close($db);
+        return;
+    }
+    
+    $publicacion = mysqli_fetch_assoc($result);
+    $id_raza_antigua = $publicacion['id_raza'];
+    
+    // Me fijo qué campos voy a actualizar
+    $updates = [];
+    if (isset($data['raza'])){
+        $raza = ucfirst(strtolower(trim($data['raza'])));
+        $raza = mysqli_real_escape_string($db, $raza);
+        $sql = "SELECT id FROM razas WHERE nombre = '$raza'";
+        $result = mysqli_query($db, $sql);
+        if (mysqli_num_rows($result) > 0) {
+            $fila = mysqli_fetch_assoc($result);
+            $id_raza = $fila['id'];
+            // Actualizo la cantidad de publicaciones de la nueva raza
+            $sql = "UPDATE razas SET cantidad_publicaciones = cantidad_publicaciones + 1 WHERE id = $id_raza";
+            $result = mysqli_query($db, $sql);
+            if ($result === false){
+                outputError([500, 'Error al actualizar cantidad de publicaciones']);
+                mysqli_close($db);
+                return;
+            }
+        } else {
+            // Debo insertar una nueva raza
+            $sql = "INSERT INTO razas (nombre, cantidad_publicaciones) VALUES ('$raza', 1)";
+            $result = mysqli_query($db, $sql);
+            if ($result === false){
+                outputError([500, 'Error al crear nueva raza']);
+                mysqli_close($db);
+                return;
+            }
+            $id_raza = mysqli_insert_id($db);
+        }
+        $updates[] = "id_raza = $id_raza";
+        // La raza antigua se resta una publicación
+        $sql = "UPDATE razas SET cantidad_publicaciones = cantidad_publicaciones - 1 WHERE id = $id_raza_antigua";
+        $result = mysqli_query($db, $sql);
+        if ($result === false){
+            outputError([500, 'Error al actualizar publicaciones de la raza antigua']);
+            mysqli_close($db);
+            return;
+        }
+    }
+    
+    if (isset($data['lugar'])) {
+        $lugar = mysqli_real_escape_string($db, $data['lugar']);
+        $updates[] = "lugar = '$lugar'";
+    }
+    
+    if (isset($data['foto'])) {
+        $foto = mysqli_real_escape_string($db, $data['foto']);
+        $updates[] = "foto = '$foto'";
+    }
+    
+    // Ahora puedo actualizar la publicación
+    if (count($updates) > 0){
+        $update_sql = "UPDATE publicaciones SET " . implode(',', $updates) . " WHERE id = $id_publicacion";
+        $result = mysqli_query($db, $update_sql);
+        if ($result === false){
+            outputError([500, 'Error al actualizar la publicación']);
+            mysqli_close($db);
+            return;
+        }
+    }
+    mysqli_close($db);
+    outputJson(["message" => "Se actualizó la publicación $id_publicacion con éxito."]);
+}
+
+
+function deleteUsuarios($id) {
+    settype($id, 'integer');
+    $db = conectarBD();
+    $sql = "DELETE FROM usuarios WHERE id = $id";
+    $result = mysqli_query($db, $sql);
+    if ($result === false) {
+        print mysqli_error($db);
+        outputError(500);//Internal server error
+        mysqli_close($db);
+        return;
+    }
+    if (mysqli_affected_rows($db) == 0){
+        outputError([404, 'No se encontro el usuario a eliminar']);
+    }
+    mysqli_close($db);
+    outputJson(["message " => "Se elimino correctamente el usuario $id"]);
+}
+
+function deletePublicaciones($id) {
+    settype($id, 'integer');
+    $db = conectarBD();
+    $sql = "DELETE FROM publicaciones WHERE id = $id";
+    $result = mysqli_query($db, $sql);
+    if ($result === false){
+        print mysqli_error($db);
+        outputError(500);//Internal server error
+        mysqli_close($db);
+        return;
+    }
+    if (mysqli_affected_rows($db) == 0) {
+        outputError([404, 'No se encontro la publicacion a eliminar']);
+    }
+    mysqli_close($db);
+    outputJson(["message " => "Se elimino correctamente la publicacion $id"]);
+}
+
+function deleteRazas($id) {
+    settype($id, 'integer');
+    $db = conectarBD();
+    $sql = "DELETE FROM razas WHERE id = $id";
+    $result = mysqli_query($db, $sql);
+    if ($result === false){
+        print mysqli_error($db);
+        outputError(500);//Internal server error
+        mysqli_close($db);
+        return;
+    }
+    if (mysqli_affected_rows($db) == 0) {
+        outputError([404, 'No se encontro la raza a eliminar']);
+    }
+    mysqli_close($db);
+    outputJson(["message " => "Se elimino correctamente la raza $id"]);
 }
