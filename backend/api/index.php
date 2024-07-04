@@ -170,7 +170,7 @@ function postUsuarios() {
         outputError('El mail pertenece a otro usuario');
         return;
     }
-    $password_hash = password_hash($password, PASSWORD_BCRYPT); //Creo hash para encriptar la contraseña
+    $password_hash = password_hash($password, PASSWORD_DEFAULT); //Creo hash para encriptar la contraseña
     $nombre = mysqli_real_escape_string($db, $nombre);
     $contacto = mysqli_real_escape_string($db, $nombre);
     $sql = "INSERT INTO usuarios (nombre, email, password, contacto) VALUES ('$nombre', '$email', '$password_hash', '$contacto')";
