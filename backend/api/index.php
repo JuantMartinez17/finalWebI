@@ -3,6 +3,8 @@ header('Access-Control-Allow-Origin: *');
 header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, X-Auth-Token");
 header('Access-Control-Allow-Methods: POST, GET, PATCH, DELETE');
 header("Allow: GET, POST, PATCH, DELETE");
+use \Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     return 0;
@@ -10,6 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once(__DIR__.'/../config/config.php');
 require_once(__DIR__.'/../config/generals.php');
+require_once(__DIR__.'/../config/jwt.php');
+
 
 $metodo = strtolower($_SERVER['REQUEST_METHOD']);
 $accion = isset($_GET['accion']) ? explode('/', strtolower($_GET['accion'])) : [];
@@ -38,7 +42,55 @@ function postRestablecer(){
     outputJson([], 201);//201 = created
 }
 
+function postLogin(){
+    $db = conectarBD();
+    $loginData = json_decode(file_get_contents('php://input'), true);
+    $email = mysqli_real_escape_string($db, $loginData['email']);
+    $password = mysqli_real_escape_string($db, $loginData['password']);
+    $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+    $sql = "SELECT id, nombre FROM usuarios WHERE email = '$email' AND password = '$passwordHash'";
+    $result = mysqli_query($db, $sql);
+    if($result && mysqli_num_rows($result) == 1){
+        $logged = mysqli_fetch_assoc($result);
+        $data = [
+            'user_id' => $logged['id'],
+            'nombre' => $logged['nombre'],
+            'exp' => time() + JWT_EXP,
+        ];
+
+        $jwt = JWT::encode($data, JWT_KEY, JWT_ALG);
+        $jwtSql = mysqli_real_escape_string($db, $jwt);
+        mysqli_query($db, "DELETE FROM token WHERE token = '$jwtSql'");
+        if(mysqli_query($db, "INSERT INTO token (token) VALUES ('$jwtSql')")){
+            outputJson(['jwt' => $jwt]);
+        }else{
+            outputError(500);
+        }
+    }
+    outputError(401);
+}
+
+function requireLogin(){
+    $authHeader = getallheaders();
+    try{
+        list($jwt) = @sscanf($authHeader['Authorization'], 'Bearer %s');
+        $datos = JWT::decode($jwt, new Key(JWT_KEY, JWT_ALG));
+        $db = conectarBD();
+        $jwtSql = mysqli_real_escape_string($db, $jwt);
+        $result = mysqli_query($db, $jwtSql);
+        if (!$result){
+            outputError(500);
+        } else if(mysqli_num_rows($result) != 1){
+            outputError(403);
+        }
+        mysqli_close($db);
+    }catch(Exception $e){
+        outputError(401);
+    }
+}
+
 function getUsuarios() {
+    requireLogin();
     $db = conectarBD();
     $sql = "SELECT * FROM usuarios";
     $result = mysqli_query($db, $sql);
@@ -57,6 +109,7 @@ function getUsuarios() {
 }
 
 function getPublicaciones() {
+    requireLogin();
     $db = conectarBD();
     $sql = "SELECT * FROM publicaciones";
     $result = mysqli_query($db, $sql);
@@ -76,6 +129,7 @@ function getPublicaciones() {
 }
 
 function getRazas() {
+    requireLogin();
     $db = conectarBD();
     $sql = "SELECT * FROM razas";
     $result = mysqli_query($db, $sql);
@@ -95,6 +149,7 @@ function getRazas() {
 }
 
 function getUsuariosConParametros($id) {
+    requireLogin();
     $db = conectarBD();
     settype($id, 'integer');
     $sql = "SELECT * FROM usuarios where usuarios.id = $id";
@@ -114,6 +169,7 @@ function getUsuariosConParametros($id) {
 }
 
 function getPublicacionesConParametros($id) {
+    requireLogin();
     $db = conectarBD();
     settype($id, 'integer');
     $sql = "SELECT * FROM publicaciones where publicaciones.id = $id";
@@ -135,6 +191,7 @@ function getPublicacionesConParametros($id) {
 }
 
 function getRazasConParametros($id) {
+    requireLogin();
     $db = conectarBD();
     settype($id, 'integer');
     $sql = "SELECT * FROM razas WHERE $id = razas.id";
@@ -152,6 +209,7 @@ function getRazasConParametros($id) {
 }
 
 function postUsuarios() {
+    requireLogin();
     $db = conectarBD();
     $data = json_decode(file_get_contents('php://input'), true);
     if (!isset($data['nombre']) || !isset($data['email']) || !isset($data['password']) || !isset($data['contacto'])){
@@ -184,6 +242,7 @@ function postUsuarios() {
 }
 
 function postPublicaciones() {
+    requireLogin();
     $db = conectarBD();
     $data = json_decode(file_get_contents('php://input'), true);
     if (!isset($data['usuario_id']) || !isset($data['raza']) || !isset($data['lugar']) || !isset($data['foto'])) {
@@ -235,6 +294,7 @@ function postPublicaciones() {
 }
 
 function postRazas() {
+    requireLogin();
     $db = conectarBD();
     $data = json_decode(file_get_contents('php://input'), true);
     if (!isset($data['nombre'])) {
@@ -270,6 +330,7 @@ function postRazas() {
 }
 
 function patchUsuarios($id) {
+    requireLogin();
     settype($id, 'integer');
     $db = conectarBD();
     $data = json_decode(file_get_contents('php://input'), true);
@@ -307,6 +368,7 @@ function patchUsuarios($id) {
     }
 }
 function patchPublicaciones($id_publicacion, $id_usuario) {
+    requireLogin();
     settype($id_publicacion, 'integer');
     settype($id_usuario, 'integer');
     $db = conectarBD();
@@ -396,6 +458,7 @@ function patchPublicaciones($id_publicacion, $id_usuario) {
 
 
 function deleteUsuarios($id) {
+    requireLogin();
     settype($id, 'integer');
     $db = conectarBD();
     $sql = "DELETE FROM usuarios WHERE id = $id";
@@ -414,6 +477,7 @@ function deleteUsuarios($id) {
 }
 
 function deletePublicaciones($id) {
+    requireLogin();
     settype($id, 'integer');
     $db = conectarBD();
     $sql = "DELETE FROM publicaciones WHERE id = $id";
@@ -432,6 +496,7 @@ function deletePublicaciones($id) {
 }
 
 function deleteRazas($id) {
+    requireLogin();
     settype($id, 'integer');
     $db = conectarBD();
     $sql = "DELETE FROM razas WHERE id = $id";
@@ -448,3 +513,5 @@ function deleteRazas($id) {
     mysqli_close($db);
     outputJson(["message " => "Se elimino correctamente la raza $id"]);
 }
+
+
