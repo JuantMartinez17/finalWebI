@@ -18,14 +18,13 @@
     }else{
         $email = mysqli_real_escape_string($db, $data['email']);
         $password = mysqli_real_escape_string($db, $data['password']);
-        $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
         $sql = "SELECT * FROM usuarios WHERE email = $email";
         $result = mysqli_query($db, $sql);
 
         if(mysqli_num_rows($result) === 1){
             $usuario = mysqli_fetch_assoc($result);
-            if($usuario['password'] === $password_hash){
+            if($usuario['password'] === $password){
                 iniciarSesion($usuario);
             }
             outputJson($usuario);
@@ -33,3 +32,4 @@
             outputError([403, "Usuario no encontrado o clave incorrecta"]);
         }
     }
+    
