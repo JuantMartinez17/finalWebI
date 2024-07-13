@@ -9,10 +9,9 @@ import { tap } from 'rxjs';
 export class AuthService {
 
   private apiUrl = '';
-
   constructor(private http: HttpClient) { }
 
-  login(credentials: { email: string, password: string }): Observable<any> {
+  login(credentials: {email: string, password: string}): Observable<any>{
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
         localStorage.setItem('token', response.jwt);
@@ -23,8 +22,11 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('token');
   }
-
+  
   isLoggedIn(): boolean{
     return !!localStorage.getItem('token');
   }
+  
 }
+
+
